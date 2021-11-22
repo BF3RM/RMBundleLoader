@@ -56,7 +56,9 @@ function BundleLoader:OnRegisterEntityResources(p_LevelData)
 		-- 'Coop_009_Registry'
 		DC(Guid('F94C5091-E69C-11DF-9B0E-AF9CA6E0236B'), Guid('F05798B2-31EC-210D-CC1D-0F7535BECA30')),
 		-- 'SP_Bank_Ride_SUB_Registry'
-		DC(Guid('8148A1BB-8F21-4E40-8A8F-2126000ABCD4'), Guid('9F9CABAF-21C2-EF4A-B35D-4358AEBA7565'))
+		--DC(Guid('8148A1BB-8F21-4E40-8A8F-2126000ABCD4'), Guid('9F9CABAF-21C2-EF4A-B35D-4358AEBA7565'))
+		-- 'MP_017_R_Registry'
+		DC(Guid('D9E8DC6C-250E-4AF9-9878-07809B5AE5D9'), Guid('33FF3424-F0C5-9A3A-5C0F-A49573416A13'))
 	}
 	
 	for l_Index, l_RegistryDataContainer in pairs(s_RegistriesToLoad) do
@@ -64,10 +66,10 @@ function BundleLoader:OnRegisterEntityResources(p_LevelData)
 		local s_LoadedRegistry = l_RegistryDataContainer:GetInstance()
 
 		if s_LoadedRegistry == nil then
-			m_Logger:Error("s_LoadedRegistry nil")
+			m_Logger:Warning("s_LoadedRegistry nil")
+		else
+			ResourceManager:AddRegistry(s_LoadedRegistry, ResourceCompartment.ResourceCompartment_Game)
 		end
-
-		ResourceManager:AddRegistry(s_LoadedRegistry, ResourceCompartment.ResourceCompartment_Game)
 	end
 end
 
