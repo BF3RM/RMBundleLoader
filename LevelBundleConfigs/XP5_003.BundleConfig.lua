@@ -4,7 +4,8 @@ return {
 			"AdvanceAndSecureStd",
 			"AdvanceAndSecureAlt",
 			"ConquestLarge0",
-			"SkirmishStd"
+			"SkirmishStd",
+			"TrainingStd"
 		},
 		config = {
 			terrainAssetName = 'Levels/XP5_003/XP5_003_Terrain/XP5_003_Terrain',

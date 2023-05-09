@@ -4,7 +4,8 @@ return {
 			"AdvanceAndSecureStd",
 			"AdvanceAndSecureAlt",
 			"ConquestLarge0",
-			"SkirmishStd"
+			"SkirmishStd",
+			"TrainingStd"
 		},
 		config = {
 			terrainAssetName = 'Levels/MP_WhitePeak/Terrain/Terrain',

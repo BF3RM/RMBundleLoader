@@ -4,7 +4,8 @@ return {
 			"AdvanceAndSecureStd",
 			"AdvanceAndSecureAlt",
 			"ConquestAssaultLarge0",
-			"SkirmishStd"
+			"SkirmishStd",
+			"TrainingStd"
 		},
 		config = {
 			terrainAssetName = 'Levels/XP1_001/XPACK1_001_Terrain',

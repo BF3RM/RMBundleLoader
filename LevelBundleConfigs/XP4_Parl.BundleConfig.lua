@@ -4,7 +4,8 @@ return {
 			"AdvanceAndSecureStd",
 			"AdvanceAndSecureAlt",
 			"ConquestLarge0",
-			"SkirmishStd"
+			"SkirmishStd",
+			"TrainingStd"
 		},
 		config = {
 			terrainAssetName = 'Levels/XP4_Parliament/Terrain_Parliament/Terrain_Parliament',

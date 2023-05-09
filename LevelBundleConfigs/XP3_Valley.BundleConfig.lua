@@ -4,7 +4,8 @@ return {
 			"AdvanceAndSecureStd",
 			"AdvanceAndSecureAlt",
 			"ConquestLarge0",
-			"SkirmishStd"
+			"SkirmishStd",
+			"TrainingStd"
 		},
 		config = {
 			terrainAssetName = 'Levels/MP_Canyon/MP_Canyon_Terrain/MP_Canyon_Terrain/MP_Canyon_Terrain',
