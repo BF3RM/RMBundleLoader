@@ -8,7 +8,7 @@ return {
 			"TrainingStd"
 		},
 		config = {
-			terrainAssetName = 'Levels/XP1_001/XPACK1_001_Terrain',
+			terrainAssetName = 'Levels/XP1_001/XPACK1_001_Terrain', --XPACK1_001_Terrain.txt/json
 			superBundles = {
 				'Levels/Coop_010/Coop_010',
 				'Levels/MP_013/MP_013'

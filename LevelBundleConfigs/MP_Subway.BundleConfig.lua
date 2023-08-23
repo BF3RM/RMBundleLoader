@@ -3,10 +3,9 @@ return {
 		gamemodes = {
 			"AdvanceAndSecureStd",
 			"AdvanceAndSecureAlt",
-			"ConquestAssaultLarge0",
+			"ConquestLarge0",
 			"SkirmishStd",
 			"TrainingStd",
-			"SquadDeathMatch0"
 		},
 		config = {
 			terrainAssetName = 'Levels/MP_Subway/Terrain/MP_Subway_Terrain',
