@@ -3,7 +3,7 @@ return {
 		gamemodes = {
 			"AdvanceAndSecureStd",
 			"AdvanceAndSecureAlt",
-			"ConquestLarge0",
+			"ConquestAssaultLarge0",
 			"SkirmishStd",
 			"TrainingStd"
 		},
