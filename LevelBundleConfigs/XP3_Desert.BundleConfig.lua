@@ -17,11 +17,11 @@ return {
                 'levels/MP_017/MP_017',
             },
             dynamicBundles = {
-                'Levels/MP_017/R'
+                'Levels/MP_017/CQL'
             },
             dynamicRegistries = {
-                -- 'MP_017_Rush_Registry'
-                DC(Guid('D9E8DC6C-250E-4AF9-9878-07809B5AE5D9'), Guid('33FF3424-F0C5-9A3A-5C0F-A49573416A13'))
+                -- 'MP_017_CoqL_Registry'
+                DC(Guid('74CB44C4-DD2E-4CB2-9914-C2579E68567B'), Guid('2F574B5B-D74B-62E8-43BF-18D8EB32939E'))
             }
         }
     }
