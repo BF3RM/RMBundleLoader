@@ -5,7 +5,8 @@ return {
             "AdvanceAndSecureAlt",
             "ConquestLarge0",
             "SkirmishStd",
-            "TrainingStd"
+            "TrainingStd",
+            "InsurgencyStd"
         },
         config = {
             terrainAssetName = 'Levels/XP3_Desert/Terrain/Terrain_8k',
