@@ -29,7 +29,7 @@ if Class then
 else
 	BundleLoader = class("BundleLoader")
 
-	if DEBUG == nil then DEBUG = false end
+	if DEBUG == nil then DEBUG = true end
 
 	function BundleLoader:debug(message, ...)
 		if not DEBUG then return end
