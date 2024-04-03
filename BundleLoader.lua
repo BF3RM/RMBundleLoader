@@ -97,6 +97,12 @@ function BundleLoader:UpdateConfig()
 	end
 end
 
+function BundleLoader:OnEntityCreateFromBlueprint(p_HookCtx, p_Blueprint, p_Transform, p_Variation, p_ParentRepresentative)
+	if self.currentLevelConfig.blueprintGuidsToBlock and self.currentLevelConfig.blueprintGuidsToBlock[tostring(p_Blueprint.instanceGuid)] then
+		p_HookCtx:Return()
+	end
+end
+
 function BundleLoader:GetUIBundleType(p_Bundles)
 	for _, l_Bundle in ipairs(p_Bundles) do
 		if l_Bundle:match("UiLoading") then
@@ -163,6 +169,7 @@ function BundleLoader:GetBundles(p_Bundles, p_Compartment)
 	-- Handle special client compartment
 	if p_Compartment == ResourceCompartment.ResourceCompartment_Frontend then
 		local s_Type = self:GetUIBundleType(p_Bundles)
+		print(s_Type)
 		if self.commonConfig.uiBundles and self.commonConfig.uiBundles[s_Type] then
 			self:debug("Common Config UI Bundles:")
 			self:AddBundles(s_Bundles, self.commonConfig.uiBundles[s_Type])
@@ -283,53 +290,55 @@ end
 ---@param p_HookCtx HookContext
 ---@param p_TerrainName string
 function BundleLoader:OnTerrainLoad(p_HookCtx, p_TerrainName)
-	if self.currentLevelGameModeConfig.terrainAssetName then
-		if not string.find(p_TerrainName:lower(), self.currentLevelGameModeConfig.terrainAssetName:lower()) then
-			self:debug("Prevent loading terrain: " .. p_TerrainName)
-			p_HookCtx:Return()
-		end
+	-- if self.currentLevelGameModeConfig.terrainAssetName then
+	-- 	if not string.find(p_TerrainName:lower(), self.currentLevelGameModeConfig.terrainAssetName:lower()) then
+	-- 		print("HERE 11111111111111111111111111111")
+	-- 		self:debug("Prevent loading terrain: " .. p_TerrainName)
+	-- 		p_HookCtx:Return()
+	-- 	end
 
-		return
-	end
+	-- 	return
+	-- end
 
-	if self.currentLevelConfig.terrainAssetName then
-		if not string.find(p_TerrainName:lower(), self.currentLevelConfig.terrainAssetName:lower()) then
-			self:debug("Prevent loading terrain: " .. p_TerrainName)
-			p_HookCtx:Return()
-		end
+	-- if self.currentLevelConfig.terrainAssetName then
+	-- 	if not string.find(p_TerrainName:lower(), self.currentLevelConfig.terrainAssetName:lower()) then
+	-- 		print("HERE 22222222222222222222222222")
+	-- 		self:debug("Prevent loading terrain: " .. p_TerrainName)
+	-- 		p_HookCtx:Return()
+	-- 	end
 
-		return
-	end
+	-- 	return
+	-- end
 
-	self:warn("No terrain asset name specified. This means every terrain will be loaded.")
-	self:warn("Loading terrain '%s'", p_TerrainName)
+	-- self:warn("No terrain asset name specified. This means every terrain will be loaded.")
+	-- self:warn("Loading terrain '%s'", p_TerrainName)
 end
 
 -- NOTE: THIS BELOW EXPECTS A SPECIFIC STRUCTURE
 
 -- Include modifications that should get loaded every time.
 function BundleLoader.GetCommonBundleConfig()
-	local s_Success, s_BundleConfig = pcall(require, "__shared/BundleConfig/Common")
+	local s_Success, s_BundleConfig = pcall(require, "__shared/BundleLoader/BundleConfig/Common")
 	return s_Success and s_BundleConfig or {}
 end
 
 -- Include level specific modifications. Only get loaded when the level does.
 function BundleLoader.GetLevelBundleConfig()
 	local s_LevelName = SharedUtils:GetLevelName():gsub(".*/", "")
-	local s_Success, s_BundleConfig = pcall(require, string.format("__shared/BundleConfig/Levels/%s", s_LevelName))
+	local s_Success, s_BundleConfig = pcall(require, string.format("__shared/BundleLoader/BundleConfig/Levels/%s", s_LevelName))
 	return s_Success and s_BundleConfig or {}
 end
 
 -- Include gamemode specific modifications. Only get loaded when the gamemode does.
 function BundleLoader.GetGameModeBundleConfig()
-	local s_Success, s_BundleConfig = pcall(require, string.format("__shared/BundleConfig/GameModes/%s", SharedUtils:GetCurrentGameMode()))
+	local s_Success, s_BundleConfig = pcall(require, string.format("__shared/BundleLoader/BundleConfig/GameModes/%s", SharedUtils:GetCurrentGameMode()))
 	return s_Success and s_BundleConfig or {}
 end
 
 -- Include level & gamemode specific modifications. Only get loaded when the level & gamemode does.
 function BundleLoader.GetLevelAndGameModeBundleConfig()
 	local s_LevelName = SharedUtils:GetLevelName():gsub(".*/", "")
-	local s_Success, s_BundleConfig = pcall(require, string.format("__shared/BundleConfig/Levels/%s/%s", s_LevelName, SharedUtils:GetCurrentGameMode()))
+	local s_Success, s_BundleConfig = pcall(require, string.format("__shared/BundleLoader/BundleConfig/Levels/%s/%s", s_LevelName, SharedUtils:GetCurrentGameMode()))
 	return s_Success and s_BundleConfig or {}
 end
 
