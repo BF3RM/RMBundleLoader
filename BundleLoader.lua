@@ -62,7 +62,7 @@ function BundleLoader:__init()
 	self.currentGameModeConfig = {}
 	self.currentLevelGameModeConfig = {}
 	self.commonConfig = BundleLoader.GetCommonBundleConfig()
-
+	ResourceManager:AlwaysClearGameCompartment(true)
 	Hooks:Install('ResourceManager:LoadBundles', 999, self, self.OnLoadBundles)
 	Hooks:Install("Terrain:Load", 999, self, self.OnTerrainLoad)
 	Hooks:Install("VisualTerrain:Load", 999, self, self.OnTerrainLoad)
@@ -290,13 +290,8 @@ end
 ---@param p_HookCtx HookContext
 ---@param p_TerrainName string
 function BundleLoader:OnTerrainLoad(p_HookCtx, p_TerrainName)
-	if p_TerrainName == "levels/sp_bank/terrain/terrain_4km.streamingtree" or p_TerrainName == "levels/sp_tank/terrain/sp_tank_terrain_02.streamingtree" or
-		p_TerrainName == "levels/coop_006/terrain/coop_006_terrain.streamingtree" or p_TerrainName == "levels/mp_013/terrain/mp013_testterrain.streamingtree" then
-		return
-	end
 	if self.currentLevelGameModeConfig.terrainAssetName then
 		if not string.find(p_TerrainName:lower(), self.currentLevelGameModeConfig.terrainAssetName:lower()) then
-			self:debug("Prevent loading terrain: " .. p_TerrainName)
 			p_HookCtx:Return()
 		end
 
@@ -305,7 +300,6 @@ function BundleLoader:OnTerrainLoad(p_HookCtx, p_TerrainName)
 
 	if self.currentLevelConfig.terrainAssetName then
 		if not string.find(p_TerrainName:lower(), self.currentLevelConfig.terrainAssetName:lower()) then
-			self:debug("Prevent loading terrain: " .. p_TerrainName)
 			p_HookCtx:Return()
 		end
 		return
