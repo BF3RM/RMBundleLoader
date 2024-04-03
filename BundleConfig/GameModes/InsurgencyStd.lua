@@ -10,7 +10,6 @@ return {
 		}
 	},
 	uiBundles = {
-
 	},
 	exceptionGameModeList = {}
 }

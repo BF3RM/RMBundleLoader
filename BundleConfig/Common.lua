@@ -19,7 +19,9 @@ return {
 	registries = {
 		[ResourceCompartment.ResourceCompartment_Game] = {
 			"Levels/SP_Tank/DesertFort",
-			"Levels/SP_Bank/Ride_SUB"
+			"Levels/SP_Bank/Ride_SUB",
+			"Levels/Coop_006/Coop_006",
+			"Levels/Coop_009/Coop_009"
 		}
 	}
 }

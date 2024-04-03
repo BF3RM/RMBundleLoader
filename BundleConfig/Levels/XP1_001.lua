@@ -7,7 +7,7 @@ return {
 	bundles = {
 		[ResourceCompartment.ResourceCompartment_Game] = {
 			'Levels/Coop_010/Coop_010',
-			'Levels/MP_013/MP_013', -- For vodnik
+			'Levels/MP_013/MP_013' -- For vodnik
 		},
 		[4] = {
 			'Levels/MP_013/ConquestLarge'
@@ -21,9 +21,7 @@ return {
 	uiBundles = {
 	},
 	blueprintGuidsToBlock = {
-
 	},
 	exceptionGameModeList = {
-
 	}
 }

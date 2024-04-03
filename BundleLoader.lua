@@ -290,28 +290,29 @@ end
 ---@param p_HookCtx HookContext
 ---@param p_TerrainName string
 function BundleLoader:OnTerrainLoad(p_HookCtx, p_TerrainName)
-	-- if self.currentLevelGameModeConfig.terrainAssetName then
-	-- 	if not string.find(p_TerrainName:lower(), self.currentLevelGameModeConfig.terrainAssetName:lower()) then
-	-- 		print("HERE 11111111111111111111111111111")
-	-- 		self:debug("Prevent loading terrain: " .. p_TerrainName)
-	-- 		p_HookCtx:Return()
-	-- 	end
+	if p_TerrainName == "levels/sp_bank/terrain/terrain_4km.streamingtree" or p_TerrainName == "levels/sp_tank/terrain/sp_tank_terrain_02.streamingtree" or
+		p_TerrainName == "levels/coop_006/terrain/coop_006_terrain.streamingtree" or p_TerrainName == "levels/mp_013/terrain/mp013_testterrain.streamingtree" then
+		return
+	end
+	if self.currentLevelGameModeConfig.terrainAssetName then
+		if not string.find(p_TerrainName:lower(), self.currentLevelGameModeConfig.terrainAssetName:lower()) then
+			self:debug("Prevent loading terrain: " .. p_TerrainName)
+			p_HookCtx:Return()
+		end
 
-	-- 	return
-	-- end
+		return
+	end
 
-	-- if self.currentLevelConfig.terrainAssetName then
-	-- 	if not string.find(p_TerrainName:lower(), self.currentLevelConfig.terrainAssetName:lower()) then
-	-- 		print("HERE 22222222222222222222222222")
-	-- 		self:debug("Prevent loading terrain: " .. p_TerrainName)
-	-- 		p_HookCtx:Return()
-	-- 	end
+	if self.currentLevelConfig.terrainAssetName then
+		if not string.find(p_TerrainName:lower(), self.currentLevelConfig.terrainAssetName:lower()) then
+			self:debug("Prevent loading terrain: " .. p_TerrainName)
+			p_HookCtx:Return()
+		end
+		return
+	end
 
-	-- 	return
-	-- end
-
-	-- self:warn("No terrain asset name specified. This means every terrain will be loaded.")
-	-- self:warn("Loading terrain '%s'", p_TerrainName)
+	self:warn("No terrain asset name specified. This means every terrain will be loaded.")
+	self:warn("Loading terrain '%s'", p_TerrainName)
 end
 
 -- NOTE: THIS BELOW EXPECTS A SPECIFIC STRUCTURE
