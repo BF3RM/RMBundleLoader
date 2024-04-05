@@ -62,12 +62,10 @@ function BundleLoader:__init()
 	self.currentGameModeConfig = {}
 	self.currentLevelGameModeConfig = {}
 	self.commonConfig = BundleLoader.GetCommonBundleConfig()
-	ResourceManager:AlwaysClearGameCompartment(true)
 	Hooks:Install('ResourceManager:LoadBundles', 999, self, self.OnLoadBundles)
 	Hooks:Install("Terrain:Load", 999, self, self.OnTerrainLoad)
 	Hooks:Install("VisualTerrain:Load", 999, self, self.OnTerrainLoad)
 	Events:Subscribe('Level:RegisterEntityResources', self, self.OnLevelRegisterEntityResources)
-
 	return self
 end
 
