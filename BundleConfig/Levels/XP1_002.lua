@@ -7,10 +7,14 @@ return {
 	bundles = {
 		[ResourceCompartment.ResourceCompartment_Game] = {
 			'Levels/XP5_001/XP5_001',
+			'Levels/XP5_001/CQS',
 			'Levels/XP5_001/Air_Superiority',
 		},
 	},
 	registries = {
+		[ResourceCompartment.ResourceCompartment_Game] = {
+			'Levels/XP5_001/CQS'
+		}
 	},
 	uiBundles = {
 	},
