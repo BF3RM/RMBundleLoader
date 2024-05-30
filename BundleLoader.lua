@@ -34,7 +34,6 @@ else
 	function BundleLoader:debug(message, ...)
 		if not DEBUG then return end
 		message = string.format("[BundleLoader] DEBUG: " .. message, ...)
-		print(message)
 	end
 
 	function BundleLoader:error(message, ...)
@@ -44,7 +43,6 @@ else
 
 	function BundleLoader:warn(message, ...)
 		message = string.format("[BundleLoader] WARNING: " .. message, ...)
-		print(message)
 	end
 end
 
