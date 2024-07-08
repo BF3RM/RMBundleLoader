@@ -165,7 +165,6 @@ function BundleLoader:GetBundles(p_Bundles, p_Compartment)
 	-- Handle special client compartment
 	if p_Compartment == ResourceCompartment.ResourceCompartment_Frontend then
 		local s_Type = self:GetUIBundleType(p_Bundles)
-		print(s_Type)
 		if self.commonConfig.uiBundles and self.commonConfig.uiBundles[s_Type] then
 			self:debug("Common Config UI Bundles:")
 			self:AddBundles(s_Bundles, self.commonConfig.uiBundles[s_Type])
