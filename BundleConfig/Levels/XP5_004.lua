@@ -3,18 +3,24 @@ return {
 	superBundles = {
 		'Xp3Chunks',
 		'Levels/XP3_Alborz/XP3_Alborz',
-		'Levels/MP_003/MP_003'
+		'Levels/MP_003/MP_003',
+		'Levels/Coop_003/Coop_003',
 	},
 	bundles = {
 		[ResourceCompartment.ResourceCompartment_Game] = {
 			'Levels/XP3_Alborz/XP3_Alborz',
-			'Levels/MP_003/MP_003' -- For vodnik
+			'Levels/MP_003/MP_003', -- For vodnik
+			'Levels/Coop_003/Coop_003',
+			'levels/coop_003/ab00_art_sewer_parent'
 		},
 		[4] = {
 			'Levels/MP_003/ConquestLarge'
 		}
 	},
 	registries = {
+		[ResourceCompartment.ResourceCompartment_Game] = {
+			'levels/coop_003/ab00_art_sewer_parent',
+		},
 		[4] = {
 			'Levels/MP_003/ConquestLarge'
 		}
