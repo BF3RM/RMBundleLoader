@@ -60,6 +60,7 @@ function BundleLoader:__init()
 	self.currentGameModeConfig = {}
 	self.currentLevelGameModeConfig = {}
 	self.commonConfig = BundleLoader.GetCommonBundleConfig()
+	self.LevelName = nil
 	Hooks:Install('ResourceManager:LoadBundles', 999, self, self.OnLoadBundles)
 	Hooks:Install("Terrain:Load", 999, self, self.OnTerrainLoad)
 	Hooks:Install("VisualTerrain:Load", 999, self, self.OnTerrainLoad)
@@ -73,6 +74,7 @@ function BundleLoader:UpdateConfig()
 	self.currentLevelGameModeConfig = BundleLoader.GetLevelAndGameModeBundleConfig()
 
 	local s_LevelName = SharedUtils:GetLevelName()
+	self.LevelName = s_LevelName
 	if s_LevelName and self.currentGameModeConfig.exceptionLevelList then
 		for _, l_LevelName in ipairs(self.currentGameModeConfig.exceptionLevelList) do
 			if s_LevelName:match(l_LevelName) then
@@ -129,12 +131,16 @@ end
 
 function BundleLoader:AddBundles(p_Bundles, p_BundlesToAdd)
 	for l_Index, l_Bundle in ipairs(p_BundlesToAdd) do
+		if self.LevelName == "Levels/XP1_004/XP1_004" and l_Bundle == "Levels/MP_001/Conquest_Large" then
+			goto continue
+		end
 		if _ContainsBundle(p_Bundles, l_Bundle) then
 			self:debug("Ignoring bundle '%s'. It is already in the list.", l_Bundle)
 		else
 			self:debug("%s: %s", l_Index, l_Bundle)
 			table.insert(p_Bundles, l_Bundle)
 		end
+		::continue::
 	end
 end
 
@@ -195,8 +201,12 @@ end
 function BundleLoader:OnMountSuperBundles()
 	if self.commonConfig.superBundles then
 		for l_Index, l_SuperBundle in ipairs(self.commonConfig.superBundles) do
+			if self.LevelName == "Levels/XP1_004/XP1_004" and l_SuperBundle == "Levels/MP_001/MP_001" then
+				goto continue
+			end
 			self:debug("Mounting Common SuperBundle %s: %s.", l_Index, l_SuperBundle)
 			ResourceManager:MountSuperBundle(l_SuperBundle)
+			::continue::
 		end
 	end
 
@@ -227,6 +237,9 @@ end
 function BundleLoader:AddRegistries(p_Registries)
 	for l_Compartment, l_Names in pairs(p_Registries) do
 		for _, l_Name in ipairs(l_Names) do
+			if self.LevelName == "Levels/XP1_004/XP1_004" and l_Name == "Levels/MP_001/Conquest_Large" then
+				goto continue
+			end
 			self:debug("Adding RegistryContainer from '%s' to compartment %s.", l_Name, l_Compartment)
 			local s_SubWorldData = ResourceManager:SearchForDataContainer(l_Name)
 
@@ -243,6 +256,7 @@ function BundleLoader:AddRegistries(p_Registries)
 			end
 
 			ResourceManager:AddRegistry(s_SubWorldData.registryContainer, l_Compartment)
+			::continue::
 		end
 	end
 end
