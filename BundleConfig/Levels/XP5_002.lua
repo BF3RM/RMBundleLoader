@@ -3,13 +3,20 @@ return {
 	superBundles = {
 		'MpChunks',
 		'Levels/MP_012/MP_012',
+		'Levels/MP_013/MP_013',
 	},
 	bundles = {
 		[ResourceCompartment.ResourceCompartment_Game] = {
-			'Levels/MP_012/MP_012',
+			'Levels/MP_012/MP_012'
 		},
+		[4] = {
+			'Levels/MP_013/ConquestLarge'
+		}
 	},
 	registries = {
+		[4] = {
+			'Levels/MP_013/ConquestLarge'
+		}
 	},
 	uiBundles = {
 	},
