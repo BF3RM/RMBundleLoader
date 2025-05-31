@@ -38,7 +38,7 @@ else
 
 	function BundleLoader:error(message, ...)
 		message = string.format("[BundleLoader] ERROR: " .. message, ...)
-		error(message)
+		--error(message)
 	end
 
 	function BundleLoader:warn(message, ...)
