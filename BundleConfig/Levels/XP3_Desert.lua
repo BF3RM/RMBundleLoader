@@ -11,7 +11,8 @@ return {
 			'levels/coop_003/ab00_art_sewer_parent'
 		},
 		[4] = {
-			'Levels/MP_017/CQL'
+			'Levels/MP_017/CQL',
+			'levels/xp3_desert/rushlarge0'
 		}
 	},
 	registries = {
@@ -19,7 +20,8 @@ return {
 			'levels/coop_003/ab00_art_sewer_parent'
 		},
 		[4] = {
-			'Levels/MP_017/CQL'
+			'Levels/MP_017/CQL',
+			'levels/xp3_desert/rushlarge0'
 		}
 	},
 	uiBundles = {
