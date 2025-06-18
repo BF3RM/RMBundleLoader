@@ -8,12 +8,14 @@ return {
 			'levels/MP_017/MP_017'
 		},
 		[4] = {
-			'Levels/MP_017/R'
+			'Levels/MP_017/R',
+			'levels/xp3_alborz/rushlarge0'
 		}
 	},
 	registries = {
 		[4] = {
-			'Levels/MP_017/R'
+			'Levels/MP_017/R',
+			'levels/xp3_alborz/rushlarge0'
 		}
 	},
 	uiBundles = {
