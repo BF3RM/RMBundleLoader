@@ -131,7 +131,10 @@ end
 
 function BundleLoader:AddBundles(p_Bundles, p_BundlesToAdd)
 	for l_Index, l_Bundle in ipairs(p_BundlesToAdd) do
-		if (self.LevelName == "Levels/XP4_Rubble/XP4_Rubble" and l_Bundle == "Levels/MP_001/Conquest_Large") or (self.LevelName == "Levels/MP_012/MP_012" and l_Bundle == "Levels/MP_001/Conquest_Large") or (self.LevelName == "Levels/XP1_004/XP1_004" and l_Bundle == "Levels/MP_001/Conquest_Large") or (self.LevelName == "Levels/XP4_Parl/XP4_Parl" and l_Bundle == "Levels/COOP_009/AB00_Parent") then
+		if (self.LevelName == "Levels/XP3_Valley/XP3_Valley" and l_Bundle == "Levels/MP_001/Conquest_Large") or
+			(self.LevelName == "Levels/MP_012/MP_012" and l_Bundle == "Levels/MP_001/Conquest_Large") or
+			(self.LevelName == "Levels/XP1_004/XP1_004" and l_Bundle == "Levels/MP_001/Conquest_Large") or
+			(self.LevelName == "Levels/XP4_Parl/XP4_Parl" and l_Bundle == "Levels/COOP_009/AB00_Parent") then
 			goto continue
 		end
 		if _ContainsBundle(p_Bundles, l_Bundle) then
@@ -201,7 +204,9 @@ end
 function BundleLoader:OnMountSuperBundles()
 	if self.commonConfig.superBundles then
 		for l_Index, l_SuperBundle in ipairs(self.commonConfig.superBundles) do
-			if (self.LevelName == "Levels/XP4_Rubble/XP4_Rubble" and l_SuperBundle == "Levels/MP_001/MP_001") or (self.LevelName == "Levels/MP_012/MP_012" and l_SuperBundle == "Levels/MP_001/MP_001") or (self.LevelName == "Levels/XP1_004/XP1_004" and l_SuperBundle == "Levels/MP_001/MP_001") then
+			if (self.LevelName == "Levels/XP3_Valley/XP3_Valley" and l_SuperBundle == "Levels/MP_001/MP_001") or
+				(self.LevelName == "Levels/MP_012/MP_012" and l_SuperBundle == "Levels/MP_001/MP_001") or
+				(self.LevelName == "Levels/XP1_004/XP1_004" and l_SuperBundle == "Levels/MP_001/MP_001") then
 				goto continue
 			end
 			self:debug("Mounting Common SuperBundle %s: %s.", l_Index, l_SuperBundle)
@@ -237,7 +242,10 @@ end
 function BundleLoader:AddRegistries(p_Registries)
 	for l_Compartment, l_Names in pairs(p_Registries) do
 		for _, l_Name in ipairs(l_Names) do
-			if (self.LevelName == "Levels/XP4_Rubble/XP4_Rubble" and l_Name == "Levels/MP_001/Conquest_Large") or (self.LevelName == "Levels/MP_012/MP_012" and l_Name == "Levels/MP_001/Conquest_Large") or (self.LevelName == "Levels/XP1_004/XP1_004" and l_Name == "Levels/MP_001/Conquest_Large") or (self.LevelName == "Levels/XP4_Parl/XP4_Parl" and l_Name == "Levels/COOP_009/AB00_Parent") then
+			if (self.LevelName == "Levels/XP3_Valley/XP3_Valley" and l_Name == "Levels/MP_001/Conquest_Large") or
+				(self.LevelName == "Levels/MP_012/MP_012" and l_Name == "Levels/MP_001/Conquest_Large") or
+				(self.LevelName == "Levels/XP1_004/XP1_004" and l_Name == "Levels/MP_001/Conquest_Large") or
+				(self.LevelName == "Levels/XP4_Parl/XP4_Parl" and l_Name == "Levels/COOP_009/AB00_Parent") then
 				goto continue
 			end
 			self:debug("Adding RegistryContainer from '%s' to compartment %s.", l_Name, l_Compartment)
