@@ -10,11 +10,13 @@ return {
 			'Levels/MP_012/MP_012'
 		},
 		[4] = {
+			'levels/xp5_002/air_superiority',
 			'Levels/MP_013/ConquestLarge'
 		}
 	},
 	registries = {
 		[4] = {
+			'levels/xp5_002/air_superiority',
 			'Levels/MP_013/ConquestLarge'
 		}
 	},
