@@ -71,43 +71,43 @@ function BundleLoader:__init()
 end
 
 function BundleLoader:OnLevelDestroy()
-    self:debug("Level destroyed, cleaning up bundles...")
+	self:debug("Level destroyed, cleaning up bundles...")
 
-    -- Unmount level-specific SuperBundles
-    if self.currentLevelConfig.superBundles then
-        for _, l_SuperBundle in ipairs(self.currentLevelConfig.superBundles) do
-            self:debug("Unmounting Level SuperBundle: %s", l_SuperBundle)
-            ResourceManager:UnmountSuperBundle(l_SuperBundle)
-        end
-    end
+	-- Unmount level-specific SuperBundles
+	if self.currentLevelConfig.superBundles then
+		for _, l_SuperBundle in ipairs(self.currentLevelConfig.superBundles) do
+			self:debug("Unmounting Level SuperBundle: %s", l_SuperBundle)
+			ResourceManager:UnmountSuperBundle(l_SuperBundle)
+		end
+	end
 
-    -- Unmount level+gamemode SuperBundles
-    if self.currentLevelGameModeConfig.superBundles then
-        for _, l_SuperBundle in ipairs(self.currentLevelGameModeConfig.superBundles) do
-            self:debug("Unmounting Level+GameMode SuperBundle: %s", l_SuperBundle)
-            ResourceManager:UnmountSuperBundle(l_SuperBundle)
-        end
-    end
+	-- Unmount level+gamemode SuperBundles
+	if self.currentLevelGameModeConfig.superBundles then
+		for _, l_SuperBundle in ipairs(self.currentLevelGameModeConfig.superBundles) do
+			self:debug("Unmounting Level+GameMode SuperBundle: %s", l_SuperBundle)
+			ResourceManager:UnmountSuperBundle(l_SuperBundle)
+		end
+	end
 
-    -- Unmount gamemode SuperBundles
-    if self.currentGameModeConfig.superBundles then
-        for _, l_SuperBundle in ipairs(self.currentGameModeConfig.superBundles) do
-            self:debug("Unmounting GameMode SuperBundle: %s", l_SuperBundle)
-            ResourceManager:UnmountSuperBundle(l_SuperBundle)
-        end
-    end
+	-- Unmount gamemode SuperBundles
+	if self.currentGameModeConfig.superBundles then
+		for _, l_SuperBundle in ipairs(self.currentGameModeConfig.superBundles) do
+			self:debug("Unmounting GameMode SuperBundle: %s", l_SuperBundle)
+			ResourceManager:UnmountSuperBundle(l_SuperBundle)
+		end
+	end
 
-    -- Clear configs
-    self.currentLevelConfig = {}
-    self.currentGameModeConfig = {}
-    self.currentLevelGameModeConfig = {}
-    self.LevelName = nil
+	-- Clear configs
+	self.currentLevelConfig = {}
+	self.currentGameModeConfig = {}
+	self.currentLevelGameModeConfig = {}
+	self.LevelName = nil
 
-    -- Force garbage collection
-    collectgarbage("collect")
-    collectgarbage("collect")
+	-- Force garbage collection
+	collectgarbage("collect")
+	collectgarbage("collect")
 
-    self:debug("Cleanup complete.")
+	self:debug("Cleanup complete.")
 end
 
 function BundleLoader:UpdateConfig()
@@ -173,9 +173,7 @@ end
 
 function BundleLoader:AddBundles(p_Bundles, p_BundlesToAdd)
 	for l_Index, l_Bundle in ipairs(p_BundlesToAdd) do
-		if (self.LevelName == "Levels/XP3_Valley/XP3_Valley" and l_Bundle == "Levels/MP_001/Conquest_Large") or
-			(self.LevelName == "Levels/MP_012/MP_012" and l_Bundle == "Levels/MP_001/Conquest_Large") or
-			(self.LevelName == "Levels/XP4_Parl/XP4_Parl" and l_Bundle == "Levels/COOP_009/AB00_Parent") then
+		if (self.LevelName == "Levels/XP4_Parl/XP4_Parl" and l_Bundle == "Levels/COOP_009/AB00_Parent") then
 			goto continue
 		end
 		if _ContainsBundle(p_Bundles, l_Bundle) then
@@ -244,53 +242,47 @@ end
 
 function BundleLoader:OnMountSuperBundles()
 	-- Only mount common SuperBundles ONCE
-    if not self.commonSuperBundlesMounted and self.commonConfig.superBundles then
-        for l_Index, l_SuperBundle in ipairs(self.commonConfig.superBundles) do
-            if (self.LevelName == "Levels/XP3_Valley/XP3_Valley" and l_SuperBundle == "Levels/MP_001/MP_001") or
-                (self.LevelName == "Levels/MP_012/MP_012" and l_SuperBundle == "Levels/MP_001/MP_001") then
-                goto continue
-            end
-            self:debug("Mounting Common SuperBundle %s: %s.", l_Index, l_SuperBundle)
-            ResourceManager:MountSuperBundle(l_SuperBundle)
-            ::continue::
-        end
+	if not self.commonSuperBundlesMounted and self.commonConfig.superBundles then
+		for l_Index, l_SuperBundle in ipairs(self.commonConfig.superBundles) do
+			self:debug("Mounting Common SuperBundle %s: %s.", l_Index, l_SuperBundle)
+			ResourceManager:MountSuperBundle(l_SuperBundle)
+			::continue::
+		end
 
-        -- Mark as mounted so we don't do it again
-        self.commonSuperBundlesMounted = true
-        self:debug("Common SuperBundles mounted (will not remount on next map).")
-    end
+		-- Mark as mounted so we don't do it again
+		self.commonSuperBundlesMounted = true
+		self:debug("Common SuperBundles mounted (will not remount on next map).")
+	end
 
-    -- Always mount level-specific SuperBundles
-    if self.currentLevelConfig.superBundles then
-        for l_Index, l_SuperBundle in ipairs(self.currentLevelConfig.superBundles) do
-            self:debug("Mounting Level SuperBundle %s: %s.", l_Index, l_SuperBundle)
-            ResourceManager:MountSuperBundle(l_SuperBundle)
-        end
-    end
+	-- Always mount level-specific SuperBundles
+	if self.currentLevelConfig.superBundles then
+		for l_Index, l_SuperBundle in ipairs(self.currentLevelConfig.superBundles) do
+			self:debug("Mounting Level SuperBundle %s: %s.", l_Index, l_SuperBundle)
+			ResourceManager:MountSuperBundle(l_SuperBundle)
+		end
+	end
 
-    if self.currentLevelGameModeConfig.superBundles then
-        for l_Index, l_SuperBundle in ipairs(self.currentLevelGameModeConfig.superBundles) do
-            self:debug("Mounting Level + GameMode SuperBundle %s: %s.", l_Index, l_SuperBundle)
-            ResourceManager:MountSuperBundle(l_SuperBundle)
-        end
-    end
+	if self.currentLevelGameModeConfig.superBundles then
+		for l_Index, l_SuperBundle in ipairs(self.currentLevelGameModeConfig.superBundles) do
+			self:debug("Mounting Level + GameMode SuperBundle %s: %s.", l_Index, l_SuperBundle)
+			ResourceManager:MountSuperBundle(l_SuperBundle)
+		end
+	end
 
-    if self.currentGameModeConfig.superBundles then
-        for l_Index, l_SuperBundle in ipairs(self.currentGameModeConfig.superBundles) do
-            self:debug("Mounting GameMode SuperBundle %s: %s.", l_Index, l_SuperBundle)
-            ResourceManager:MountSuperBundle(l_SuperBundle)
-        end
-    end
+	if self.currentGameModeConfig.superBundles then
+		for l_Index, l_SuperBundle in ipairs(self.currentGameModeConfig.superBundles) do
+			self:debug("Mounting GameMode SuperBundle %s: %s.", l_Index, l_SuperBundle)
+			ResourceManager:MountSuperBundle(l_SuperBundle)
+		end
+	end
 
-    self:debug("Mounted all SuperBundles.")
+	self:debug("Mounted all SuperBundles.")
 end
 
 function BundleLoader:AddRegistries(p_Registries)
 	for l_Compartment, l_Names in pairs(p_Registries) do
 		for _, l_Name in ipairs(l_Names) do
-			if (self.LevelName == "Levels/XP3_Valley/XP3_Valley" and l_Name == "Levels/MP_001/Conquest_Large") or
-				(self.LevelName == "Levels/MP_012/MP_012" and l_Name == "Levels/MP_001/Conquest_Large") or
-				(self.LevelName == "Levels/XP4_Parl/XP4_Parl" and l_Name == "Levels/COOP_009/AB00_Parent") then
+			if (self.LevelName == "Levels/XP4_Parl/XP4_Parl" and l_Name == "Levels/COOP_009/AB00_Parent") then
 				goto continue
 			end
 			self:debug("Adding RegistryContainer from '%s' to compartment %s.", l_Name, l_Compartment)
