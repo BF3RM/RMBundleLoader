@@ -14,7 +14,8 @@ return {
 			"Levels/SP_Bank/SP_Bank",
 			"Levels/SP_Bank/Ride_SUB",
 			'Levels/Coop_006/Coop_006',
-			'Levels/Coop_009/Coop_009'
+			'Levels/Coop_009/Coop_009',
+			'Levels/COOP_006/AB03_Parent'
 		},
 		[4] = {
 			'Levels/MP_001/Conquest_Large'
@@ -28,7 +29,8 @@ return {
 			"Levels/Coop_009/Coop_009"
 		},
 		[4] = {
-			'Levels/MP_001/Conquest_Large'
+			'Levels/MP_001/Conquest_Large',
+			'Levels/COOP_006/AB03_Parent'
 		}
 	}
 }
