@@ -61,11 +61,9 @@ function BundleLoader:__init()
 	self.commonConfig = BundleLoader.GetCommonBundleConfig()
 	self.LevelName = nil
 	self.commonSuperBundlesMounted = false
-	Hooks:Install('ResourceManager:LoadBundles', 999, self, self.OnLoadBundles)
 	Hooks:Install("Terrain:Load", 999, self, self.OnTerrainLoad)
 	Hooks:Install("VisualTerrain:Load", 999, self, self.OnTerrainLoad)
 	Events:Subscribe('Level:RegisterEntityResources', self, self.OnLevelRegisterEntityResources)
-	Events:Subscribe('Level:Destroy', self, self.OnLevelDestroy)
 
 	return self
 end
