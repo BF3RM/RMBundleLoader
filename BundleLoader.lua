@@ -171,9 +171,6 @@ end
 
 function BundleLoader:AddBundles(p_Bundles, p_BundlesToAdd)
 	for l_Index, l_Bundle in ipairs(p_BundlesToAdd) do
-		if (self.LevelName == "Levels/XP4_Parl/XP4_Parl" and l_Bundle == "Levels/COOP_009/AB00_Parent") then
-			goto continue
-		end
 		if _ContainsBundle(p_Bundles, l_Bundle) then
 			self:debug("Ignoring bundle '%s'. It is already in the list.", l_Bundle)
 		else
@@ -280,9 +277,6 @@ end
 function BundleLoader:AddRegistries(p_Registries)
 	for l_Compartment, l_Names in pairs(p_Registries) do
 		for _, l_Name in ipairs(l_Names) do
-			if (self.LevelName == "Levels/XP4_Parl/XP4_Parl" and l_Name == "Levels/COOP_009/AB00_Parent") then
-				goto continue
-			end
 			self:debug("Adding RegistryContainer from '%s' to compartment %s.", l_Name, l_Compartment)
 			local s_SubWorldData = ResourceManager:SearchForDataContainer(l_Name)
 
