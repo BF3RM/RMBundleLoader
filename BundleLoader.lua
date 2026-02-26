@@ -61,6 +61,7 @@ function BundleLoader:__init()
 	self.commonConfig = BundleLoader.GetCommonBundleConfig()
 	self.LevelName = nil
 	self.commonSuperBundlesMounted = false
+	self.pendingUnmounts = {}
 	Hooks:Install("Terrain:Load", 999, self, self.OnTerrainLoad)
 	Hooks:Install("VisualTerrain:Load", 999, self, self.OnTerrainLoad)
 	Events:Subscribe('Level:RegisterEntityResources', self, self.OnLevelRegisterEntityResources)
@@ -69,43 +70,23 @@ function BundleLoader:__init()
 end
 
 function BundleLoader:OnLevelDestroy()
-	print("Level destroyed, cleaning up bundles...")
+	self:debug("Level destroyed, queuing SuperBundles for deferred unmount...")
 
-	-- Get the next level's config to avoid unmounting bundles it will need
-	local s_NextLevelConfig = BundleLoader.GetLevelBundleConfig()
-	local s_NextGameModeConfig = BundleLoader.GetGameModeBundleConfig()
-	local s_NextLevelGameModeConfig = BundleLoader.GetLevelAndGameModeBundleConfig()
+	-- Queue all current level SuperBundles for unmounting later
+	-- (we don't know the next level yet, so we defer)
+	self.pendingUnmounts = {}
 
-	-- Build a set of SuperBundles the next map will need
-	local s_KeepSuperBundles = {}
-	local function _MarkKeep(p_Config)
-		if p_Config and p_Config.superBundles then
-			for _, l_SB in ipairs(p_Config.superBundles) do
-				s_KeepSuperBundles[l_SB:lower()] = true
-			end
-		end
-	end
-	_MarkKeep(s_NextLevelConfig)
-	_MarkKeep(s_NextGameModeConfig)
-	_MarkKeep(s_NextLevelGameModeConfig)
-	-- Common SuperBundles are never unmounted anyway, but include for safety
-	_MarkKeep(self.commonConfig)
-
-	local function _SafeUnmount(p_Config, p_Label)
+	local function _QueueUnmounts(p_Config, p_Label)
 		if not p_Config or not p_Config.superBundles then return end
 		for _, l_SuperBundle in ipairs(p_Config.superBundles) do
-			if s_KeepSuperBundles[l_SuperBundle:lower()] then
-				self:debug("Skipping unmount of %s SuperBundle '%s' (needed by next map).", p_Label, l_SuperBundle)
-			else
-				self:debug("Unmounting %s SuperBundle: %s", p_Label, l_SuperBundle)
-				ResourceManager:UnmountSuperBundle(l_SuperBundle)
-			end
+			self:debug("Queuing %s SuperBundle for unmount: %s", p_Label, l_SuperBundle)
+			table.insert(self.pendingUnmounts, l_SuperBundle)
 		end
 	end
 
-	_SafeUnmount(self.currentLevelConfig, "Level")
-	_SafeUnmount(self.currentLevelGameModeConfig, "Level+GameMode")
-	_SafeUnmount(self.currentGameModeConfig, "GameMode")
+	_QueueUnmounts(self.currentLevelConfig, "Level")
+	_QueueUnmounts(self.currentLevelGameModeConfig, "Level+GameMode")
+	_QueueUnmounts(self.currentGameModeConfig, "GameMode")
 
 	-- Clear configs
 	self.currentLevelConfig = {}
@@ -116,7 +97,7 @@ function BundleLoader:OnLevelDestroy()
 	collectgarbage("collect")
 	collectgarbage("collect")
 
-	print("Cleanup complete.")
+	self:debug("Cleanup queued, deferred to next LoadBundles.")
 end
 
 function BundleLoader:UpdateConfig()
@@ -336,6 +317,35 @@ end
 function BundleLoader:OnLoadBundles(p_HookCtx, p_Bundles, p_Compartment)
 	if p_Compartment == ResourceCompartment.ResourceCompartment_Game then
 		self:UpdateConfig()
+
+		-- Now we know the next level, process deferred unmounts
+		if #self.pendingUnmounts > 0 then
+			-- Build keep-set from the freshly loaded next map configs
+			local s_KeepSuperBundles = {}
+			local function _MarkKeep(p_Config)
+				if p_Config and p_Config.superBundles then
+					for _, l_SB in ipairs(p_Config.superBundles) do
+						s_KeepSuperBundles[l_SB:lower()] = true
+					end
+				end
+			end
+			_MarkKeep(self.commonConfig)
+			_MarkKeep(self.currentLevelConfig)
+			_MarkKeep(self.currentGameModeConfig)
+			_MarkKeep(self.currentLevelGameModeConfig)
+
+			for _, l_SuperBundle in ipairs(self.pendingUnmounts) do
+				if s_KeepSuperBundles[l_SuperBundle:lower()] then
+					self:debug("Keeping SuperBundle (next map needs it): %s", l_SuperBundle)
+				else
+					self:debug("Unmounting deferred SuperBundle: %s", l_SuperBundle)
+					ResourceManager:UnmountSuperBundle(l_SuperBundle)
+				end
+			end
+
+			self.pendingUnmounts = {}
+		end
+
 		self:OnMountSuperBundles()
 	end
 
