@@ -21,7 +21,6 @@ THE SOFTWARE.
 --]]
 
 if Class then
-	-- Using LoggingClass
 	---@class BundleLoader:Class
 	---@overload fun():BundleLoader
 	---@diagnostic disable-next-line: assign-type-mismatch
@@ -54,13 +53,6 @@ UiBundleTypes = {
 	EndOfRound = 4
 }
 
--- Map pairs that share SuperBundles and need smart unmount handling.
--- Add any other problematic pairs here as you discover them.
-local SHARED_SUPERBUNDLE_PAIRS = {
-	['xp3_alborz'] = 'xp5_004',
-	['xp5_004']    = 'xp3_alborz',
-}
-
 function BundleLoader:__init()
 	self.currentLevelConfig = {}
 	self.currentGameModeConfig = {}
@@ -68,6 +60,11 @@ function BundleLoader:__init()
 	self.commonConfig = BundleLoader.GetCommonBundleConfig()
 	self.LevelName = nil
 	self.commonSuperBundlesMounted = false
+
+	-- Track ALL currently mounted SuperBundles to avoid double-mounting
+	-- and to know what needs unmounting after the next map loads
+	self.mountedSuperBundles = {}
+
 	Hooks:Install("Terrain:Load", 999, self, self.OnTerrainLoad)
 	Hooks:Install("VisualTerrain:Load", 999, self, self.OnTerrainLoad)
 	Events:Subscribe('Level:RegisterEntityResources', self, self.OnLevelRegisterEntityResources)
@@ -76,70 +73,19 @@ function BundleLoader:__init()
 end
 
 function BundleLoader:OnLevelDestroy()
-	self:debug("Level destroyed, cleaning up bundles...")
+	self:debug("Level destroyed, deferring SuperBundle cleanup to next map load...")
 
-	local s_CurrentLevel = self.LevelName and self.LevelName:gsub(".*/", ""):lower() or nil
-	local s_NextLevelName = SharedUtils:GetLevelName()
-	local s_NextLevel = s_NextLevelName and s_NextLevelName:gsub(".*/", ""):lower() or nil
+	-- We intentionally do NOT unmount anything here.
+	-- Unmounting during a map transition is unsafe and causes crashes.
+	-- Cleanup of unneeded SuperBundles happens in OnLoadBundles once
+	-- the next map's config is known.
 
-	local s_UseSmartUnmount = s_CurrentLevel and s_NextLevel and
-		SHARED_SUPERBUNDLE_PAIRS[s_CurrentLevel] == s_NextLevel
-
-	-- Build keep-set only for the specific pair that needs it
-	local s_KeepSuperBundles = {}
-	if s_UseSmartUnmount then
-		self:debug("Smart unmount active for %s -> %s transition.", s_CurrentLevel, s_NextLevel)
-		local s_NextConfig = BundleLoader.GetLevelBundleConfig()
-		if s_NextConfig and s_NextConfig.superBundles then
-			for _, l_SB in ipairs(s_NextConfig.superBundles) do
-				s_KeepSuperBundles[l_SB:lower()] = true
-			end
-		end
-	end
-
-	-- Unmount level-specific SuperBundles
-	if self.currentLevelConfig.superBundles then
-		for _, l_SuperBundle in ipairs(self.currentLevelConfig.superBundles) do
-			if s_KeepSuperBundles[l_SuperBundle:lower()] then
-				self:debug("Keeping Level SuperBundle (needed by next map): %s", l_SuperBundle)
-			else
-				self:debug("Unmounting Level SuperBundle: %s", l_SuperBundle)
-				ResourceManager:UnmountSuperBundle(l_SuperBundle)
-			end
-		end
-	end
-
-	-- Unmount level+gamemode SuperBundles
-	if self.currentLevelGameModeConfig.superBundles then
-		for _, l_SuperBundle in ipairs(self.currentLevelGameModeConfig.superBundles) do
-			if s_KeepSuperBundles[l_SuperBundle:lower()] then
-				self:debug("Keeping Level+GameMode SuperBundle (needed by next map): %s", l_SuperBundle)
-			else
-				self:debug("Unmounting Level+GameMode SuperBundle: %s", l_SuperBundle)
-				ResourceManager:UnmountSuperBundle(l_SuperBundle)
-			end
-		end
-	end
-
-	-- Unmount gamemode SuperBundles
-	if self.currentGameModeConfig.superBundles then
-		for _, l_SuperBundle in ipairs(self.currentGameModeConfig.superBundles) do
-			if s_KeepSuperBundles[l_SuperBundle:lower()] then
-				self:debug("Keeping GameMode SuperBundle (needed by next map): %s", l_SuperBundle)
-			else
-				self:debug("Unmounting GameMode SuperBundle: %s", l_SuperBundle)
-				ResourceManager:UnmountSuperBundle(l_SuperBundle)
-			end
-		end
-	end
-
-	-- Clear configs
+	-- Clear configs but keep mountedSuperBundles intact
 	self.currentLevelConfig = {}
 	self.currentGameModeConfig = {}
 	self.currentLevelGameModeConfig = {}
 	self.LevelName = nil
 
-	-- Force garbage collection
 	collectgarbage("collect")
 	collectgarbage("collect")
 
@@ -153,6 +99,7 @@ function BundleLoader:UpdateConfig()
 
 	local s_LevelName = SharedUtils:GetLevelName()
 	self.LevelName = s_LevelName
+
 	if s_LevelName and self.currentGameModeConfig.exceptionLevelList then
 		for _, l_LevelName in ipairs(self.currentGameModeConfig.exceptionLevelList) do
 			if s_LevelName:match(l_LevelName) then
@@ -164,7 +111,7 @@ function BundleLoader:UpdateConfig()
 
 	local s_GameMode = SharedUtils:GetCurrentGameMode()
 	if s_GameMode and self.currentLevelConfig.exceptionGameModeList then
-		for _, l_GameMode in ipairs(self.currentGameModeConfig.exceptionGameModeList) do
+		for _, l_GameMode in ipairs(self.currentLevelConfig.exceptionGameModeList) do
 			if s_GameMode:match(l_GameMode) then
 				self.currentLevelConfig = {}
 				break
@@ -246,6 +193,7 @@ function BundleLoader:GetBundles(p_Bundles, p_Compartment)
 	-- Handle special client compartment
 	if p_Compartment == ResourceCompartment.ResourceCompartment_Frontend then
 		local s_Type = self:GetUIBundleType(p_Bundles)
+
 		if self.commonConfig.uiBundles and self.commonConfig.uiBundles[s_Type] then
 			self:debug("Common Config UI Bundles:")
 			self:AddBundles(s_Bundles, self.commonConfig.uiBundles[s_Type])
@@ -273,39 +221,48 @@ function BundleLoader:GetBundles(p_Bundles, p_Compartment)
 	return s_Bundles
 end
 
+function BundleLoader:_BuildNeededSuperBundles()
+	-- Build a set of all SuperBundles the current map needs
+	local s_Needed = {}
+
+	local function _Add(p_Config)
+		if p_Config and p_Config.superBundles then
+			for _, l_SB in ipairs(p_Config.superBundles) do
+				s_Needed[l_SB:lower()] = l_SB -- keep original casing for mounting
+			end
+		end
+	end
+
+	_Add(self.commonConfig)
+	_Add(self.currentLevelConfig)
+	_Add(self.currentGameModeConfig)
+	_Add(self.currentLevelGameModeConfig)
+
+	return s_Needed
+end
+
 function BundleLoader:OnMountSuperBundles()
-	-- Only mount common SuperBundles ONCE
-	if not self.commonSuperBundlesMounted and self.commonConfig.superBundles then
-		for l_Index, l_SuperBundle in ipairs(self.commonConfig.superBundles) do
-			self:debug("Mounting Common SuperBundle %s: %s.", l_Index, l_SuperBundle)
-			ResourceManager:MountSuperBundle(l_SuperBundle)
-			::continue::
-		end
+	local s_Needed = self:_BuildNeededSuperBundles()
 
-		-- Mark as mounted so we don't do it again
-		self.commonSuperBundlesMounted = true
-		self:debug("Common SuperBundles mounted (will not remount on next map).")
-	end
-
-	-- Always mount level-specific SuperBundles
-	if self.currentLevelConfig.superBundles then
-		for l_Index, l_SuperBundle in ipairs(self.currentLevelConfig.superBundles) do
-			self:debug("Mounting Level SuperBundle %s: %s.", l_Index, l_SuperBundle)
-			ResourceManager:MountSuperBundle(l_SuperBundle)
+	-- Unmount SuperBundles that are currently mounted but not needed by this map.
+	-- This is safe here because we're at the START of the new map's load,
+	-- not in the middle of a transition.
+	for l_MountedKey, l_MountedOriginal in pairs(self.mountedSuperBundles) do
+		if not s_Needed[l_MountedKey] then
+			self:debug("Unmounting unneeded SuperBundle: %s", l_MountedOriginal)
+			ResourceManager:UnmountSuperBundle(l_MountedOriginal)
+			self.mountedSuperBundles[l_MountedKey] = nil
 		end
 	end
 
-	if self.currentLevelGameModeConfig.superBundles then
-		for l_Index, l_SuperBundle in ipairs(self.currentLevelGameModeConfig.superBundles) do
-			self:debug("Mounting Level + GameMode SuperBundle %s: %s.", l_Index, l_SuperBundle)
-			ResourceManager:MountSuperBundle(l_SuperBundle)
-		end
-	end
-
-	if self.currentGameModeConfig.superBundles then
-		for l_Index, l_SuperBundle in ipairs(self.currentGameModeConfig.superBundles) do
-			self:debug("Mounting GameMode SuperBundle %s: %s.", l_Index, l_SuperBundle)
-			ResourceManager:MountSuperBundle(l_SuperBundle)
+	-- Mount SuperBundles that are needed but not yet mounted
+	for l_Key, l_Original in pairs(s_Needed) do
+		if not self.mountedSuperBundles[l_Key] then
+			self:debug("Mounting SuperBundle: %s", l_Original)
+			ResourceManager:MountSuperBundle(l_Original)
+			self.mountedSuperBundles[l_Key] = l_Original
+		else
+			self:debug("SuperBundle already mounted, skipping: %s", l_Original)
 		end
 	end
 
@@ -378,7 +335,6 @@ function BundleLoader:OnTerrainLoad(p_HookCtx, p_TerrainName)
 		if not string.find(p_TerrainName:lower(), self.currentLevelGameModeConfig.terrainAssetName:lower()) then
 			p_HookCtx:Return()
 		end
-
 		return
 	end
 
