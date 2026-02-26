@@ -54,6 +54,13 @@ UiBundleTypes = {
 	EndOfRound = 4
 }
 
+-- Map pairs that share SuperBundles and need smart unmount handling.
+-- Add any other problematic pairs here as you discover them.
+local SHARED_SUPERBUNDLE_PAIRS = {
+	['xp3_alborz'] = 'xp5_004',
+	['xp5_004']    = 'xp3_alborz',
+}
+
 function BundleLoader:__init()
 	self.currentLevelConfig = {}
 	self.currentGameModeConfig = {}
@@ -61,7 +68,6 @@ function BundleLoader:__init()
 	self.commonConfig = BundleLoader.GetCommonBundleConfig()
 	self.LevelName = nil
 	self.commonSuperBundlesMounted = false
-	self.pendingUnmounts = {}
 	Hooks:Install("Terrain:Load", 999, self, self.OnTerrainLoad)
 	Hooks:Install("VisualTerrain:Load", 999, self, self.OnTerrainLoad)
 	Events:Subscribe('Level:RegisterEntityResources', self, self.OnLevelRegisterEntityResources)
@@ -70,23 +76,62 @@ function BundleLoader:__init()
 end
 
 function BundleLoader:OnLevelDestroy()
-	self:debug("Level destroyed, queuing SuperBundles for deferred unmount...")
+	self:debug("Level destroyed, cleaning up bundles...")
 
-	-- Queue all current level SuperBundles for unmounting later
-	-- (we don't know the next level yet, so we defer)
-	self.pendingUnmounts = {}
+	local s_CurrentLevel = self.LevelName and self.LevelName:gsub(".*/", ""):lower() or nil
+	local s_NextLevelName = SharedUtils:GetLevelName()
+	local s_NextLevel = s_NextLevelName and s_NextLevelName:gsub(".*/", ""):lower() or nil
 
-	local function _QueueUnmounts(p_Config, p_Label)
-		if not p_Config or not p_Config.superBundles then return end
-		for _, l_SuperBundle in ipairs(p_Config.superBundles) do
-			self:debug("Queuing %s SuperBundle for unmount: %s", p_Label, l_SuperBundle)
-			table.insert(self.pendingUnmounts, l_SuperBundle)
+	local s_UseSmartUnmount = s_CurrentLevel and s_NextLevel and
+		SHARED_SUPERBUNDLE_PAIRS[s_CurrentLevel] == s_NextLevel
+
+	-- Build keep-set only for the specific pair that needs it
+	local s_KeepSuperBundles = {}
+	if s_UseSmartUnmount then
+		self:debug("Smart unmount active for %s -> %s transition.", s_CurrentLevel, s_NextLevel)
+		local s_NextConfig = BundleLoader.GetLevelBundleConfig()
+		if s_NextConfig and s_NextConfig.superBundles then
+			for _, l_SB in ipairs(s_NextConfig.superBundles) do
+				s_KeepSuperBundles[l_SB:lower()] = true
+			end
 		end
 	end
 
-	_QueueUnmounts(self.currentLevelConfig, "Level")
-	_QueueUnmounts(self.currentLevelGameModeConfig, "Level+GameMode")
-	_QueueUnmounts(self.currentGameModeConfig, "GameMode")
+	-- Unmount level-specific SuperBundles
+	if self.currentLevelConfig.superBundles then
+		for _, l_SuperBundle in ipairs(self.currentLevelConfig.superBundles) do
+			if s_KeepSuperBundles[l_SuperBundle:lower()] then
+				self:debug("Keeping Level SuperBundle (needed by next map): %s", l_SuperBundle)
+			else
+				self:debug("Unmounting Level SuperBundle: %s", l_SuperBundle)
+				ResourceManager:UnmountSuperBundle(l_SuperBundle)
+			end
+		end
+	end
+
+	-- Unmount level+gamemode SuperBundles
+	if self.currentLevelGameModeConfig.superBundles then
+		for _, l_SuperBundle in ipairs(self.currentLevelGameModeConfig.superBundles) do
+			if s_KeepSuperBundles[l_SuperBundle:lower()] then
+				self:debug("Keeping Level+GameMode SuperBundle (needed by next map): %s", l_SuperBundle)
+			else
+				self:debug("Unmounting Level+GameMode SuperBundle: %s", l_SuperBundle)
+				ResourceManager:UnmountSuperBundle(l_SuperBundle)
+			end
+		end
+	end
+
+	-- Unmount gamemode SuperBundles
+	if self.currentGameModeConfig.superBundles then
+		for _, l_SuperBundle in ipairs(self.currentGameModeConfig.superBundles) do
+			if s_KeepSuperBundles[l_SuperBundle:lower()] then
+				self:debug("Keeping GameMode SuperBundle (needed by next map): %s", l_SuperBundle)
+			else
+				self:debug("Unmounting GameMode SuperBundle: %s", l_SuperBundle)
+				ResourceManager:UnmountSuperBundle(l_SuperBundle)
+			end
+		end
+	end
 
 	-- Clear configs
 	self.currentLevelConfig = {}
@@ -94,10 +139,11 @@ function BundleLoader:OnLevelDestroy()
 	self.currentLevelGameModeConfig = {}
 	self.LevelName = nil
 
+	-- Force garbage collection
 	collectgarbage("collect")
 	collectgarbage("collect")
 
-	self:debug("Cleanup queued, deferred to next LoadBundles.")
+	self:debug("Cleanup complete.")
 end
 
 function BundleLoader:UpdateConfig()
@@ -210,12 +256,12 @@ function BundleLoader:GetBundles(p_Bundles, p_Compartment)
 			self:AddBundles(s_Bundles, self.currentLevelConfig.uiBundles[s_Type])
 		end
 
-		if self.currentLevelGameModeConfig.bundles and self.currentLevelGameModeConfig.uiBundles[s_Type] then
+		if self.currentLevelGameModeConfig.uiBundles and self.currentLevelGameModeConfig.uiBundles[s_Type] then
 			self:debug("Current Level + GameMode Config UI Bundles:")
 			self:AddBundles(s_Bundles, self.currentLevelGameModeConfig.uiBundles[s_Type])
 		end
 
-		if self.currentGameModeConfig.bundles and self.currentGameModeConfig.uiBundles[s_Type] then
+		if self.currentGameModeConfig.uiBundles and self.currentGameModeConfig.uiBundles[s_Type] then
 			self:debug("Current GameMode Config UI Bundles:")
 			self:AddBundles(s_Bundles, self.currentGameModeConfig.uiBundles[s_Type])
 		end
@@ -317,35 +363,6 @@ end
 function BundleLoader:OnLoadBundles(p_HookCtx, p_Bundles, p_Compartment)
 	if p_Compartment == ResourceCompartment.ResourceCompartment_Game then
 		self:UpdateConfig()
-
-		-- Now we know the next level, process deferred unmounts
-		if #self.pendingUnmounts > 0 then
-			-- Build keep-set from the freshly loaded next map configs
-			local s_KeepSuperBundles = {}
-			local function _MarkKeep(p_Config)
-				if p_Config and p_Config.superBundles then
-					for _, l_SB in ipairs(p_Config.superBundles) do
-						s_KeepSuperBundles[l_SB:lower()] = true
-					end
-				end
-			end
-			_MarkKeep(self.commonConfig)
-			_MarkKeep(self.currentLevelConfig)
-			_MarkKeep(self.currentGameModeConfig)
-			_MarkKeep(self.currentLevelGameModeConfig)
-
-			for _, l_SuperBundle in ipairs(self.pendingUnmounts) do
-				if s_KeepSuperBundles[l_SuperBundle:lower()] then
-					self:debug("Keeping SuperBundle (next map needs it): %s", l_SuperBundle)
-				else
-					self:debug("Unmounting deferred SuperBundle: %s", l_SuperBundle)
-					ResourceManager:UnmountSuperBundle(l_SuperBundle)
-				end
-			end
-
-			self.pendingUnmounts = {}
-		end
-
 		self:OnMountSuperBundles()
 	end
 
