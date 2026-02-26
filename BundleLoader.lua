@@ -69,31 +69,43 @@ function BundleLoader:__init()
 end
 
 function BundleLoader:OnLevelDestroy()
-	self:debug("Level destroyed, cleaning up bundles...")
+	print("Level destroyed, cleaning up bundles...")
 
-	-- Unmount level-specific SuperBundles
-	if self.currentLevelConfig.superBundles then
-		for _, l_SuperBundle in ipairs(self.currentLevelConfig.superBundles) do
-			self:debug("Unmounting Level SuperBundle: %s", l_SuperBundle)
-			ResourceManager:UnmountSuperBundle(l_SuperBundle)
+	-- Get the next level's config to avoid unmounting bundles it will need
+	local s_NextLevelConfig = BundleLoader.GetLevelBundleConfig()
+	local s_NextGameModeConfig = BundleLoader.GetGameModeBundleConfig()
+	local s_NextLevelGameModeConfig = BundleLoader.GetLevelAndGameModeBundleConfig()
+
+	-- Build a set of SuperBundles the next map will need
+	local s_KeepSuperBundles = {}
+	local function _MarkKeep(p_Config)
+		if p_Config and p_Config.superBundles then
+			for _, l_SB in ipairs(p_Config.superBundles) do
+				s_KeepSuperBundles[l_SB:lower()] = true
+			end
+		end
+	end
+	_MarkKeep(s_NextLevelConfig)
+	_MarkKeep(s_NextGameModeConfig)
+	_MarkKeep(s_NextLevelGameModeConfig)
+	-- Common SuperBundles are never unmounted anyway, but include for safety
+	_MarkKeep(self.commonConfig)
+
+	local function _SafeUnmount(p_Config, p_Label)
+		if not p_Config or not p_Config.superBundles then return end
+		for _, l_SuperBundle in ipairs(p_Config.superBundles) do
+			if s_KeepSuperBundles[l_SuperBundle:lower()] then
+				self:debug("Skipping unmount of %s SuperBundle '%s' (needed by next map).", p_Label, l_SuperBundle)
+			else
+				self:debug("Unmounting %s SuperBundle: %s", p_Label, l_SuperBundle)
+				ResourceManager:UnmountSuperBundle(l_SuperBundle)
+			end
 		end
 	end
 
-	-- Unmount level+gamemode SuperBundles
-	if self.currentLevelGameModeConfig.superBundles then
-		for _, l_SuperBundle in ipairs(self.currentLevelGameModeConfig.superBundles) do
-			self:debug("Unmounting Level+GameMode SuperBundle: %s", l_SuperBundle)
-			ResourceManager:UnmountSuperBundle(l_SuperBundle)
-		end
-	end
-
-	-- Unmount gamemode SuperBundles
-	if self.currentGameModeConfig.superBundles then
-		for _, l_SuperBundle in ipairs(self.currentGameModeConfig.superBundles) do
-			self:debug("Unmounting GameMode SuperBundle: %s", l_SuperBundle)
-			ResourceManager:UnmountSuperBundle(l_SuperBundle)
-		end
-	end
+	_SafeUnmount(self.currentLevelConfig, "Level")
+	_SafeUnmount(self.currentLevelGameModeConfig, "Level+GameMode")
+	_SafeUnmount(self.currentGameModeConfig, "GameMode")
 
 	-- Clear configs
 	self.currentLevelConfig = {}
@@ -101,11 +113,10 @@ function BundleLoader:OnLevelDestroy()
 	self.currentLevelGameModeConfig = {}
 	self.LevelName = nil
 
-	-- Force garbage collection
 	collectgarbage("collect")
 	collectgarbage("collect")
 
-	self:debug("Cleanup complete.")
+	print("Cleanup complete.")
 end
 
 function BundleLoader:UpdateConfig()
